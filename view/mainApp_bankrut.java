@@ -13,6 +13,10 @@ import java.text.NumberFormat;
 import java.util.Locale;
 import model.entitas;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> bd8fd8149f57ec09d40e96412827f800b2aa1cd3
 
 public class mainApp_bankrut extends JFrame  {
     
@@ -206,11 +210,19 @@ public class mainApp_bankrut extends JFrame  {
 
         return true;
     }
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> bd8fd8149f57ec09d40e96412827f800b2aa1cd3
     private JPanel panelNasabah() {
         JPanel main = new JPanel(new BorderLayout());
         main.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
+<<<<<<< HEAD
+=======
+        // Panel Cari
+>>>>>>> bd8fd8149f57ec09d40e96412827f800b2aa1cd3
         JPanel pCari = new JPanel(new FlowLayout(FlowLayout.LEFT));
         pCari.setBorder(BorderFactory.createTitledBorder("Pencarian Data"));
         JButton bCari = new JButton("🔍 Cari");
@@ -342,7 +354,11 @@ public class mainApp_bankrut extends JFrame  {
         tCariNasabah.setText("");
         tNoRek.setEditable(true);
     }
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> bd8fd8149f57ec09d40e96412827f800b2aa1cd3
     private JPanel panelTeller() {
         JPanel main = new JPanel(new BorderLayout());
         main.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -478,7 +494,11 @@ public class mainApp_bankrut extends JFrame  {
         tCariTeller.setText("");
         tIdTeller.setEditable(true);
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> bd8fd8149f57ec09d40e96412827f800b2aa1cd3
     private JPanel panelTransaksi() {
         JPanel main = new JPanel(new BorderLayout());
         main.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
