@@ -478,3 +478,144 @@ public class mainApp_bankrut extends JFrame  {
         tCariTeller.setText("");
         tIdTeller.setEditable(true);
     }
+
+    private JPanel panelTransaksi() {
+        JPanel main = new JPanel(new BorderLayout());
+        main.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        
+        JPanel pCari = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        pCari.setBorder(BorderFactory.createTitledBorder("Pencarian Data"));
+        JButton bCari = new JButton("🔍 Cari");
+        pCari.add(new JLabel("Cari ID/Jenis:")); 
+        pCari.add(tCariTransaksi); 
+        pCari.add(bCari);
+        
+        JPanel pForm = new JPanel(new GridLayout(3, 2, 10, 10));
+        pForm.setBorder(BorderFactory.createTitledBorder("Form Transaksi"));
+        pForm.add(new JLabel("ID Transaksi:")); 
+        pForm.add(tIdTransaksi);
+        pForm.add(new JLabel("Jenis Transaksi:")); 
+        pForm.add(cbJenisTransaksi);
+        pForm.add(new JLabel("Nominal (Rp):")); 
+        pForm.add(tNominal);
+
+        JPanel pBtn = new JPanel();
+        JButton bSim = new JButton("💾 Simpan");
+        JButton bUpd = new JButton("✏️ Update");
+        JButton bHap = new JButton("🗑️ Hapus");
+        JButton bPdf = new JButton("📄 Export PDF");
+        JButton bClr = new JButton("🔄 Clear");
+        
+        pBtn.add(bSim); pBtn.add(bUpd); pBtn.add(bHap); pBtn.add(bPdf); pBtn.add(bClr);
+
+        JPanel pNorth = new JPanel(new BorderLayout());
+        pNorth.add(pCari, BorderLayout.NORTH);
+        pNorth.add(pForm, BorderLayout.CENTER);
+        pNorth.add(pBtn, BorderLayout.SOUTH);
+
+        tblTransaksi.setModel(modTransaksi);
+        tblTransaksi.setRowHeight(25);
+        main.add(pNorth, BorderLayout.NORTH);
+        main.add(new JScrollPane(tblTransaksi), BorderLayout.CENTER);
+
+        bSim.addActionListener(e -> {
+            if (!validateTransaksiInput()) return;
+            try {
+                control.tambahTransaksi(new entitas.Transaksi(
+                    tIdTransaksi.getText().trim(), 
+                    (String) cbJenisTransaksi.getSelectedItem(), 
+                    Double.parseDouble(tNominal.getText().trim())
+                ));
+                JOptionPane.showMessageDialog(this, "✅ Data Transaksi Berhasil Disimpan");
+                loadTransaksi(""); 
+                clearTransaksi();
+            } catch (Exception ex) { 
+                JOptionPane.showMessageDialog(this, "❌ " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); 
+            }
+        });
+
+        bUpd.addActionListener(e -> {
+            if (!validateTransaksiInput()) return;
+            try {
+                control.ubahTransaksi(new entitas.Transaksi(
+                    tIdTransaksi.getText().trim(), 
+                    (String) cbJenisTransaksi.getSelectedItem(), 
+                    Double.parseDouble(tNominal.getText().trim())
+                ));
+                JOptionPane.showMessageDialog(this, "✅ Data Transaksi Berhasil Diupdate");
+                loadTransaksi(""); 
+                clearTransaksi();
+            } catch (Exception ex) { 
+                JOptionPane.showMessageDialog(this, "❌ " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); 
+            }
+        });
+
+        bHap.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(this, 
+                "Yakin hapus data transaksi ini?", 
+                "Konfirmasi Hapus", 
+                JOptionPane.YES_NO_OPTION);
+            if(confirm == JOptionPane.YES_OPTION) {
+                try {
+                    control.hapusTransaksi(tIdTransaksi.getText().trim());
+                    JOptionPane.showMessageDialog(this, "✅ Data Transaksi Berhasil Dihapus");
+                    loadTransaksi(""); 
+                    clearTransaksi();
+                } catch (Exception ex) { 
+                    JOptionPane.showMessageDialog(this, "❌ " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); 
+                }
+            }
+        });
+
+        bCari.addActionListener(e -> loadTransaksi(tCariTransaksi.getText())); 
+        
+        bPdf.addActionListener(e -> {
+            if (control.exportPDF(tblTransaksi, "Data_Transaksi_Bank.pdf")) {
+                JOptionPane.showMessageDialog(this, 
+                    "✅ Data berhasil di-export ke PDF!\nLokasi: Downloads/Data_Transaksi_Bank.pdf");
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                    "❌ Gagal export PDF!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        
+        bClr.addActionListener(e -> clearTransaksi());
+
+        tblTransaksi.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                int r = tblTransaksi.getSelectedRow();
+                tIdTransaksi.setText(modTransaksi.getValueAt(r, 0).toString());
+                cbJenisTransaksi.setSelectedItem(modTransaksi.getValueAt(r, 1).toString());
+                tNominal.setText(modTransaksi.getValueAt(r, 2).toString());
+                tIdTransaksi.setEditable(false);
+            }
+        });
+
+        return main;
+    }
+
+    private void loadTransaksi(String key) {
+        modTransaksi.setRowCount(0);
+        try {
+            List<entitas.Transaksi> list = key.isEmpty() ? 
+                control.getAllTransaksi() : control.cariTransaksi(key);
+            for(entitas.Transaksi tr : list) {
+                modTransaksi.addRow(new Object[]{
+                    tr.idTransaksi, 
+                    tr.jenisTransaksi, 
+                    currencyFormat.format(tr.nominal)
+                });
+            }
+        } catch (Exception e) { 
+            e.printStackTrace(); 
+        }
+    }
+
+    private void clearTransaksi() {
+        tIdTransaksi.setText(""); 
+        tNominal.setText(""); 
+        cbJenisTransaksi.setSelectedIndex(0); 
+        tCariTransaksi.setText("");
+        tIdTransaksi.setEditable(true);
+    }
+}
