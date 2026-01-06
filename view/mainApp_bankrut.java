@@ -206,3 +206,275 @@ public class mainApp_bankrut extends JFrame  {
 
         return true;
     }
+
+    private JPanel panelNasabah() {
+        JPanel main = new JPanel(new BorderLayout());
+        main.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        JPanel pCari = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        pCari.setBorder(BorderFactory.createTitledBorder("Pencarian Data"));
+        JButton bCari = new JButton("🔍 Cari");
+        pCari.add(new JLabel("Cari Nama/No. Rek:")); 
+        pCari.add(tCariNasabah); 
+        pCari.add(bCari);
+
+        JPanel pForm = new JPanel(new GridLayout(3, 2, 10, 10));
+        pForm.setBorder(BorderFactory.createTitledBorder("Form Data Nasabah"));
+        pForm.add(new JLabel("No. Rekening:")); 
+        pForm.add(tNoRek);
+        pForm.add(new JLabel("Nama Nasabah:")); 
+        pForm.add(tNamaNasabah);
+        pForm.add(new JLabel("Jenis Rekening:")); 
+        pForm.add(cbJenisRekening);
+
+        JPanel pBtn = new JPanel();
+        JButton bSim = new JButton("💾 Simpan");
+        JButton bUpd = new JButton("✏️ Update");
+        JButton bHap = new JButton("🗑️ Hapus");
+        JButton bPdf = new JButton("📄 Export PDF");
+        JButton bClr = new JButton("🔄 Clear");
+        
+        pBtn.add(bSim); pBtn.add(bUpd); pBtn.add(bHap); pBtn.add(bPdf); pBtn.add(bClr);
+
+        JPanel pNorth = new JPanel(new BorderLayout());
+        pNorth.add(pCari, BorderLayout.NORTH);
+        pNorth.add(pForm, BorderLayout.CENTER);
+        pNorth.add(pBtn, BorderLayout.SOUTH);
+
+        tblNasabah.setModel(modNasabah);
+        tblNasabah.setRowHeight(25);
+        main.add(pNorth, BorderLayout.NORTH);
+        main.add(new JScrollPane(tblNasabah), BorderLayout.CENTER);
+
+        bSim.addActionListener(e -> {
+            if (!validateNasabahInput()) return;
+            try {
+                control.tambahNasabah(new entitas.Nasabah(
+                    tNoRek.getText().trim(), 
+                    tNamaNasabah.getText().trim(), 
+                    (String) cbJenisRekening.getSelectedItem()
+                ));
+                JOptionPane.showMessageDialog(this, "✅ Data Nasabah Berhasil Disimpan");
+                loadNasabah(""); 
+                clearNasabah();
+            } catch (Exception ex) { 
+                JOptionPane.showMessageDialog(this, "❌ " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); 
+            }
+        });
+
+        bUpd.addActionListener(e -> {
+            if (!validateNasabahInput()) return;
+            try {
+                control.ubahNasabah(new entitas.Nasabah(
+                    tNoRek.getText().trim(), 
+                    tNamaNasabah.getText().trim(), 
+                    (String) cbJenisRekening.getSelectedItem()
+                ));
+                JOptionPane.showMessageDialog(this, "✅ Data Nasabah Berhasil Diupdate");
+                loadNasabah(""); 
+                clearNasabah();
+            } catch (Exception ex) { 
+                JOptionPane.showMessageDialog(this, "❌ " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); 
+            }
+        });
+
+        bHap.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(this, 
+                "Yakin hapus data nasabah ini?", 
+                "Konfirmasi Hapus", 
+                JOptionPane.YES_NO_OPTION);
+            if(confirm == JOptionPane.YES_OPTION) {
+                try {
+                    control.hapusNasabah(tNoRek.getText().trim());
+                    JOptionPane.showMessageDialog(this, "✅ Data Nasabah Berhasil Dihapus");
+                    loadNasabah(""); 
+                    clearNasabah();
+                } catch (Exception ex) { 
+                    JOptionPane.showMessageDialog(this, "❌ " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); 
+                }
+            }
+        });
+
+        bCari.addActionListener(e -> loadNasabah(tCariNasabah.getText()));
+        
+        bPdf.addActionListener(e -> {
+            if (control.exportPDF(tblNasabah, "Data_Nasabah_Bank.pdf")) {
+                JOptionPane.showMessageDialog(this, 
+                    "✅ Data berhasil di-export ke PDF!\nLokasi: Downloads/Data_Nasabah_Bank.pdf");
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                    "❌ Gagal export PDF!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        
+        bClr.addActionListener(e -> clearNasabah());
+
+        tblNasabah.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                int r = tblNasabah.getSelectedRow();
+                tNoRek.setText(modNasabah.getValueAt(r, 0).toString());
+                tNamaNasabah.setText(modNasabah.getValueAt(r, 1).toString());
+                cbJenisRekening.setSelectedItem(modNasabah.getValueAt(r, 2).toString());
+                tNoRek.setEditable(false);
+            }
+        });
+
+        return main;
+    }
+
+    private void loadNasabah(String key) {
+        modNasabah.setRowCount(0);
+        try {
+            List<entitas.Nasabah> list = key.isEmpty() ? 
+                control.getAllNasabah() : control.cariNasabah(key);
+            for(entitas.Nasabah n : list) {
+                modNasabah.addRow(new Object[]{n.noRekening, n.nama, n.jenisRekening});
+            }
+        } catch (Exception e) { 
+            e.printStackTrace(); 
+        }
+    }
+
+    private void clearNasabah() {
+        tNoRek.setText(""); 
+        tNamaNasabah.setText(""); 
+        cbJenisRekening.setSelectedIndex(0); 
+        tCariNasabah.setText("");
+        tNoRek.setEditable(true);
+    }
+    
+    private JPanel panelTeller() {
+        JPanel main = new JPanel(new BorderLayout());
+        main.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        JPanel pCari = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        pCari.setBorder(BorderFactory.createTitledBorder("Pencarian Data"));
+        JButton bCari = new JButton("🔍 Cari");
+        pCari.add(new JLabel("Cari Nama/ID Teller:")); 
+        pCari.add(tCariTeller); 
+        pCari.add(bCari);
+
+        JPanel pForm = new JPanel(new GridLayout(3, 2, 10, 10));
+        pForm.setBorder(BorderFactory.createTitledBorder("Form Data Teller"));
+        pForm.add(new JLabel("ID Teller:")); 
+        pForm.add(tIdTeller);
+        pForm.add(new JLabel("Nama Teller:")); 
+        pForm.add(tNamaTeller);
+        pForm.add(new JLabel("Shift:")); 
+        pForm.add(cbShift);
+
+        JPanel pBtn = new JPanel();
+        JButton bSim = new JButton("💾 Simpan");
+        JButton bUpd = new JButton("✏️ Update");
+        JButton bHap = new JButton("🗑️ Hapus");
+        JButton bPdf = new JButton("📄 Export PDF");
+        JButton bClr = new JButton("🔄 Clear");
+        
+        pBtn.add(bSim); pBtn.add(bUpd); pBtn.add(bHap); pBtn.add(bPdf); pBtn.add(bClr);
+
+        JPanel pNorth = new JPanel(new BorderLayout());
+        pNorth.add(pCari, BorderLayout.NORTH);
+        pNorth.add(pForm, BorderLayout.CENTER);
+        pNorth.add(pBtn, BorderLayout.SOUTH);
+
+        tblTeller.setModel(modTeller);
+        tblTeller.setRowHeight(25);
+        main.add(pNorth, BorderLayout.NORTH);
+        main.add(new JScrollPane(tblTeller), BorderLayout.CENTER);
+
+        bSim.addActionListener(e -> {
+            if (!validateTellerInput()) return;
+            try {
+                control.tambahTeller(new entitas.Teller(
+                    tIdTeller.getText().trim(), 
+                    tNamaTeller.getText().trim(), 
+                    (String) cbShift.getSelectedItem()
+                ));
+                JOptionPane.showMessageDialog(this, "✅ Data Teller Berhasil Disimpan");
+                loadTeller(""); 
+                clearTeller();
+            } catch (Exception ex) { 
+                JOptionPane.showMessageDialog(this, "❌ " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); 
+            }
+        });
+
+        bUpd.addActionListener(e -> {
+            if (!validateTellerInput()) return;
+            try {
+                control.ubahTeller(new entitas.Teller(
+                    tIdTeller.getText().trim(), 
+                    tNamaTeller.getText().trim(), 
+                    (String) cbShift.getSelectedItem()
+                ));
+                JOptionPane.showMessageDialog(this, "✅ Data Teller Berhasil Diupdate");
+                loadTeller(""); 
+                clearTeller();
+            } catch (Exception ex) { 
+                JOptionPane.showMessageDialog(this, "❌ " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE); 
+            }
+        });
+        
+        bHap.addActionListener(e -> { 
+            int confirm = JOptionPane.showConfirmDialog(this, 
+                "Yakin hapus data teller ini?", 
+                "Konfirmasi Hapus", 
+                JOptionPane.YES_NO_OPTION);
+            if(confirm == JOptionPane.YES_OPTION) {
+                try { 
+                    control.hapusTeller(tIdTeller.getText().trim()); 
+                    JOptionPane.showMessageDialog(this, "✅ Data Teller Berhasil Dihapus");
+                    loadTeller(""); 
+                    clearTeller();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "❌ " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        bCari.addActionListener(e -> loadTeller(tCariTeller.getText()));
+        
+        bPdf.addActionListener(e -> {
+            if (control.exportPDF(tblTeller, "Data_Teller_Bank.pdf")) {
+                JOptionPane.showMessageDialog(this, 
+                    "✅ Data berhasil di-export ke PDF!\nLokasi: Downloads/Data_Teller_Bank.pdf");
+            } else {
+                JOptionPane.showMessageDialog(this, 
+                    "❌ Gagal export PDF!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        
+        bClr.addActionListener(e -> clearTeller());
+
+        tblTeller.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                int r = tblTeller.getSelectedRow();
+                tIdTeller.setText(modTeller.getValueAt(r, 0).toString());
+                tNamaTeller.setText(modTeller.getValueAt(r, 1).toString());
+                cbShift.setSelectedItem(modTeller.getValueAt(r, 2).toString());
+                tIdTeller.setEditable(false);
+            }
+        });
+
+        return main;
+    }
+
+    private void loadTeller(String key) {
+        modTeller.setRowCount(0);
+        try {
+            List<entitas.Teller> list = key.isEmpty() ? 
+                control.getAllTeller() : control.cariTeller(key);
+            for(entitas.Teller t : list) {
+                modTeller.addRow(new Object[]{t.idTeller, t.nama, t.shift});
+            }
+        } catch (Exception e) { 
+            e.printStackTrace(); 
+        }
+    }
+
+    private void clearTeller() {
+        tIdTeller.setText(""); 
+        tNamaTeller.setText(""); 
+        cbShift.setSelectedIndex(0); 
+        tCariTeller.setText("");
+        tIdTeller.setEditable(true);
+    }
