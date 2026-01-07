@@ -56,7 +56,7 @@ public class mainApp_bankrut extends JFrame  {
     
 
     public mainApp_bankrut() {
-        setTitle("SISTEM INFORMASI PERBANKAN - Bank Digital Indonesia");
+        setTitle("SISTEM INFORMASI PERBANKAN (BANK-RUT)");
         setSize(1000, 750);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -618,4 +618,6 @@ public class mainApp_bankrut extends JFrame  {
         tCariTransaksi.setText("");
         tIdTransaksi.setEditable(true);
     }
+
+    
 }
