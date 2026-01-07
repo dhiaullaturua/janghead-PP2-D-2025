@@ -14,7 +14,6 @@ import java.util.Locale;
 import model.entitas;
 
 
-
 public class mainApp_bankrut extends JFrame  {
     
     private controller_bankrut control = new controller_bankrut();
@@ -207,12 +206,11 @@ public class mainApp_bankrut extends JFrame  {
 
         return true;
     }
-    
+
     private JPanel panelNasabah() {
         JPanel main = new JPanel(new BorderLayout());
         main.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Panel Cari
         JPanel pCari = new JPanel(new FlowLayout(FlowLayout.LEFT));
         pCari.setBorder(BorderFactory.createTitledBorder("Pencarian Data"));
         JButton bCari = new JButton("🔍 Cari");
