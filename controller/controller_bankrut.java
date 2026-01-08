@@ -151,3 +151,147 @@ public class controller_bankrut {
         ps.setString(3, t.idTeller);
         ps.executeUpdate();
     }
+
+    // Menghapus data teller berdasarkan ID teller
+    public void hapusTeller(String idTeller) throws SQLException {
+        Connection conn = koneksi_DB.configDB();
+        PreparedStatement ps = conn.prepareStatement("DELETE FROM teller WHERE id_teller=?");
+        ps.setString(1, idTeller);
+        ps.execute();
+    }
+
+    // Mencari teller berdasarkan keyword (nama atau ID teller)
+    public List<entitas.Teller> cariTeller(String key) throws SQLException {
+        List<entitas.Teller> list = new ArrayList<>();
+        Connection conn = koneksi_DB.configDB();
+        PreparedStatement ps = conn.prepareStatement(
+            "SELECT * FROM teller WHERE nama LIKE ? OR id_teller LIKE ?"
+        );
+        ps.setString(1, "%" + key + "%"); 
+        ps.setString(2, "%" + key + "%");
+        ResultSet rs = ps.executeQuery();
+        
+        while(rs.next()) {
+            list.add(new entitas.Teller(
+                rs.getString("id_teller"), 
+                rs.getString("nama"), 
+                rs.getString("shift")
+            ));
+        }
+        return list;
+    }
+
+    // Fitur Transaksi
+
+    // Mengambil semua data transaksi dari database
+    public void ubahTransaksi(entitas.Transaksi tr) throws SQLException {
+        Connection conn = koneksi_DB.configDB();
+        PreparedStatement ps = conn.prepareStatement(
+         "UPDATE transaksi SET jenis_transaksi=?, nominal=? WHERE id_transaksi=?"
+        );
+            ps.setString(1, tr.jenisTransaksi);
+            ps.setDouble(2, tr.nominal);
+            ps.setString(3, tr.idTransaksi);
+            ps.executeUpdate();
+    }
+
+    // Menghapus data transaksi berdasarkan ID transaksi
+    public void hapusTransaksi(String idTransaksi) throws SQLException {
+        Connection conn = koneksi_DB.configDB();
+            PreparedStatement ps = conn.prepareStatement("DELETE FROM transaksi WHERE id_transaksi=?");
+            ps.setString(1, idTransaksi);
+            ps.execute();
+    }
+    // Mencari transaksi berdasarkan keyword (jenis transaksi atau ID transaksi)
+    public List<entitas.Transaksi> cariTransaksi(String key) throws SQLException {
+        List<entitas.Transaksi> list = new ArrayList<>();
+        Connection conn = koneksi_DB.configDB();
+        PreparedStatement ps = conn.prepareStatement(
+            "SELECT * FROM transaksi WHERE jenis_transaksi LIKE ? OR id_transaksi LIKE ?"
+            );
+            ps.setString(1, "%" + key + "%");
+            ps.setString(2, "%" + key + "%");
+            ResultSet rs = ps.executeQuery();
+
+            while(rs.next()) {
+            list.add(new entitas.Transaksi(
+            rs.getString("id_transaksi"),
+            rs.getString("jenis_transaksi"),
+            rs.getDouble("nominal")
+            ));
+        }
+        return list;
+    }
+
+
+    // FITUR EXPORT PDF
+
+    // Method untuk mengekspor data dari JTable ke file PDF
+
+    public boolean exportPDF(JTable table, String filename) {
+        try {
+            
+            Document doc = new Document(PageSize.A4.rotate());
+            String userHome = System.getProperty("user.home");
+            String filePath = userHome + File.separator + "Downloads" + File.separator + filename;
+            PdfWriter.getInstance(doc, new FileOutputStream(filePath));
+            doc.open();
+
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.BLACK);
+            Paragraph title = new Paragraph("LAPORAN DATA - SISTEM PERBANKAN", titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(10);
+            doc.add(title);
+
+            Font dateFont = FontFactory.getFont(FontFactory.HELVETICA, 10, BaseColor.GRAY);
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy HH:mm:ss");
+            Paragraph date = new Paragraph("Tanggal Export: " + sdf.format(new Date()), dateFont);
+            date.setAlignment(Element.ALIGN_CENTER);
+            date.setSpacingAfter(20);
+            doc.add(date);  
+
+
+            PdfPTable pdfTable = new PdfPTable(table.getColumnCount());
+                pdfTable.setWidthPercentage(100);
+
+            Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, BaseColor.WHITE);     
+                for (int i = 0; i < table.getColumnCount(); i++) {
+                PdfPCell cell = new PdfPCell(new Phrase(table.getColumnName(i), headerFont));
+                cell.setBackgroundColor(new BaseColor(0, 123, 255)); // Warna biru bank
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                cell.setPadding(8);
+                pdfTable.addCell(cell);
+                }
+
+
+            Font dataFont = FontFactory.getFont(FontFactory.HELVETICA, 10, BaseColor.BLACK);
+            for (int row = 0; row < table.getRowCount(); row++) {
+                for (int col = 0; col < table.getColumnCount(); col++) {
+                Object value = table.getValueAt(row, col);
+                PdfPCell cell = new PdfPCell(new Phrase(value != null ? value.toString() : "", dataFont));
+                cell.setPadding(5);
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                if (row % 2 == 0) {
+                cell.setBackgroundColor(new BaseColor(240, 248, 255)); // Alice blue
+                }
+                pdfTable.addCell(cell);
+                }
+            }
+            doc.add(pdfTable);
+
+            Paragraph footer = new Paragraph("\n\nTotal Data: " + table.getRowCount() + " record(s)", dateFont);
+                footer.setAlignment(Element.ALIGN_RIGHT);
+                doc.add(footer);
+                doc.close();
+                System.out.println("PDF berhasil dibuat di: " + filePath);
+                return true;
+                } 
+                catch (Exception e) {
+                    System.err.println("Error saat membuat PDF: " + e.getMessage());
+                    e.printStackTrace();
+                    return false;
+                }
+    }
+
+
+}
